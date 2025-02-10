@@ -38,13 +38,17 @@ const getList = ()=>{
 
 const getElement = (id)=>{
 
-  return getList().find(note => note.id === id)
+  return persons.find(person => person.id === id)
 }
 
 
-const deleteElement = (name)=>{
+const deleteElement = (id) => {
 
-}
+  let ret =[]
+  const index = persons.findIndex(person => person.id === id);
+  if (index !== -1) ret =    persons.splice(index, 1);
+  return ret
+};
 
 
 const updateElement = (id,data)=>{
@@ -55,5 +59,6 @@ const updateElement = (id,data)=>{
 
 export  {
     getList,
-    getElement
+    getElement,
+    deleteElement
 }

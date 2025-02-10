@@ -1,6 +1,6 @@
 import express from "express"
 
-import {getList, getElement} from "./Persons.js"
+import {getList, getElement, deleteElement} from "./Persons.js"
 
 
 console.log(getList())
@@ -40,6 +40,18 @@ app.get('/api/persons/:id', (request, response) => {
       response.status(404).end()
     }
 })
+
+
+
+
+
+app.delete('/api/persons/:id', (request, response)=>{
+  const id = parseInt(request.params.id)
+  const person = deleteElement(id);
+  response.json(person);
+
+});
+
 
 
 const generateId = () => {
