@@ -1,9 +1,9 @@
 import express from "express"
 
-import Persons from "./Persons.js"
+import {getList, getElement} from "./Persons.js"
 
 
-
+console.log(getList())
 
 const app = express()
 
@@ -22,7 +22,7 @@ app.get('/', (request, response) => {
 
 app.get('/api/persons', (request, response) => {
 
-  let list = Persons.getList();
+  let list = getList();
   response.json(list)
 })
 
@@ -30,9 +30,9 @@ app.get('/api/persons', (request, response) => {
 
 app.get('/api/persons/:id', (request, response) => {
   const id = parseInt(request.params.id)
-  const note = Persons.getList().find(note => note.id === id)
-  if (note) {
-      response.json(note)
+  const person  =getElement(id);
+  if (person) {
+      response.json(person)
     } else {
       const errorNotFounded = "Person not founded";
       response.statusMessage = errorNotFounded
@@ -43,14 +43,14 @@ app.get('/api/persons/:id', (request, response) => {
 
 
 const generateId = () => {
-  const maxId = Persons.getList().length > 0
-    ? Math.max(...Persons.getList().map(n => n.id))
+  const maxId = getList().length > 0
+    ? Math.max(...getList().map(n => n.id))
     : 0
   return maxId + 1
 }
 
 app.get("/info",(req,res)=>{
-  const num = Persons.getList().length;
+  const num = getList().length;
   const now = new Date();
   const message = `<p>Phonebook has info for ${num} people.</p> <p>${now}<p/>`
   res.send(message);

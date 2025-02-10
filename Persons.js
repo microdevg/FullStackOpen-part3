@@ -28,7 +28,7 @@ let persons = [
 
 
 
-const createElement = (number)=>{
+const createElement = (newElement)=>{
 
 }
 
@@ -38,6 +38,7 @@ const getList = ()=>{
 
 const getElement = (id)=>{
 
+  return getList().find(note => note.id === id)
 }
 
 
@@ -52,6 +53,7 @@ const updateElement = (id,data)=>{
 
 
 
-export default {
-    getList
+export  {
+    getList,
+    getElement
 }
