@@ -28,6 +28,27 @@ app.get('/api/persons', (request, response) => {
 
 
 
+app.get('/api/persons/:id', (request, response) => {
+  const id = parseInt(request.params.id)
+  const note = Persons.getList().find(note => note.id === id)
+  if (note) {
+      response.json(note)
+    } else {
+      const errorNotFounded = "Person not founded";
+      response.statusMessage = errorNotFounded
+      response.send(`<h3>${errorNotFounded}</h3>`)
+      response.status(404).end()
+    }
+})
+
+
+const generateId = () => {
+  const maxId = Persons.getList().length > 0
+    ? Math.max(...Persons.getList().map(n => n.id))
+    : 0
+  return maxId + 1
+}
+
 app.get("/info",(req,res)=>{
   const num = Persons.getList().length;
   const now = new Date();
