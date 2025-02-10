@@ -37,10 +37,11 @@ app.get('/api/persons/:id', (req, res) => {
   if (person) {
       res.json(person)
     } else {
-      const errorNotFounded = "Person not founded";
-      res.statusMessage = errorNotFounded
-      res.send(`<h3>${errorNotFounded}</h3>`)
-      res.status(404).end()
+      const errorMessage = "Person not founded";
+      res.statusMessage = errorMessage
+      
+      res.status(404)
+      res.json({errorMessage}) 
     }
 })
 
@@ -50,20 +51,32 @@ app.get('/api/persons/:id', (req, res) => {
 const getRandomInt = (max=100000) => {
   return Math.floor(Math.random() * (max + 1));
 };
-app.post('/api/persons', (req, res) => {
-  
 
+
+app.post('/api/persons', (req, res) => {
   const {name,number} = req.body;
 
   if (name != undefined && number != undefined) {
-    const person = {name,number, id : getRandomInt()};
+
+      const unique = getList().find(person => person.name == name)
+      const errorMessage = "Name already  used ";
+      if(unique != undefined){
+        res.statusMessage = errorMessage
+        res.status(404)
+        return res.json({errorMessage}) 
+
+      }
+    
+
+      const person = {name,number, id : getRandomInt()};
       createElement(person);
       res.json(person);
     } else {
       const errorMessage = "Error in data";
       res.statusMessage = errorMessage
-      res.send(`<h3>${errorMessage}</h3>`)
-      res.status(404).end()
+      
+      res.status(404)
+      res.json({errorMessage}) 
     }
 })
 
