@@ -1,4 +1,9 @@
 import express from "express"
+import  unknownEndpoint from "./middleware/unknownEndPoint.js"
+
+
+import morgan from "morgan"
+
 
 import {  getList, 
           getElement,
@@ -15,8 +20,11 @@ const app = express()
 app.use(express.json())
 
 
+// Middleware para agregar el body a los tokens de Morgan
+morgan.token('body', (req) => JSON.stringify(req.body) || '');
 
-
+// Configurar Morgan con el token personalizado
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'));
 
 
 app.get('/', (req, res) => {
@@ -108,6 +116,7 @@ app.get("/info",(req,res)=>{
 
 
 
+app.use(unknownEndpoint)
 
 
 
