@@ -1,6 +1,9 @@
 import express from "express"
 
-import {getList, getElement, deleteElement} from "./Persons.js"
+import {  getList, 
+          getElement,
+          deleteElement,
+          createElement} from "./Persons.js"
 
 
 console.log(getList())
@@ -16,39 +19,61 @@ app.use(express.json())
 
 
 
-app.get('/', (request, response) => {
-  response.send('<h1>Phone book</h1>')
+app.get('/', (req, res) => {
+  res.send('<h1>Phone book</h1>')
 })
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (req, res) => {
 
   let list = getList();
-  response.json(list)
+  res.json(list)
 })
 
 
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = parseInt(request.params.id)
+app.get('/api/persons/:id', (req, res) => {
+  const id = parseInt(req.params.id)
   const person  =getElement(id);
   if (person) {
-      response.json(person)
+      res.json(person)
     } else {
       const errorNotFounded = "Person not founded";
-      response.statusMessage = errorNotFounded
-      response.send(`<h3>${errorNotFounded}</h3>`)
-      response.status(404).end()
+      res.statusMessage = errorNotFounded
+      res.send(`<h3>${errorNotFounded}</h3>`)
+      res.status(404).end()
     }
 })
 
 
 
 
+const getRandomInt = (max=100000) => {
+  return Math.floor(Math.random() * (max + 1));
+};
+app.post('/api/persons', (req, res) => {
+  
 
-app.delete('/api/persons/:id', (request, response)=>{
-  const id = parseInt(request.params.id)
+  const {name,number} = req.body;
+
+  if (name != undefined && number != undefined) {
+    const person = {name,number, id : getRandomInt()};
+      createElement(person);
+      res.json(person);
+    } else {
+      const errorMessage = "Error in data";
+      res.statusMessage = errorMessage
+      res.send(`<h3>${errorMessage}</h3>`)
+      res.status(404).end()
+    }
+})
+
+
+
+
+app.delete('/api/persons/:id', (req, res)=>{
+  const id = parseInt(req.params.id)
   const person = deleteElement(id);
-  response.json(person);
+  res.json(person);
 
 });
 

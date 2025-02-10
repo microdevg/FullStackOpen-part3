@@ -29,7 +29,7 @@ let persons = [
 
 
 const createElement = (newElement)=>{
-
+  return persons.push(newElement);
 }
 
 const getList = ()=>{
@@ -60,5 +60,6 @@ const updateElement = (id,data)=>{
 export  {
     getList,
     getElement,
-    deleteElement
+    deleteElement,
+    createElement
 }
