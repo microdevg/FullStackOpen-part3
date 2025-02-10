@@ -21,6 +21,9 @@ app.use(cors())
 
 app.use(express.json())
 
+app.use(express.static('dist'))
+
+
 
 // Middleware para agregar el body a los tokens de Morgan
 morgan.token('body', (req) => JSON.stringify(req.body) || '');
