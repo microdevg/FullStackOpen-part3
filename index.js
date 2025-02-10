@@ -28,6 +28,14 @@ app.get('/api/persons', (request, response) => {
 
 
 
+app.get("/info",(req,res)=>{
+  const num = Persons.getList().length;
+  const now = new Date();
+  const message = `<p>Phonebook has info for ${num} people.</p> <p>${now}<p/>`
+  res.send(message);
+})
+
+
 
 
 
