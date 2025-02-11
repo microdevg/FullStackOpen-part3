@@ -38,8 +38,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/persons', (req, res) => {
 
-  let list = getList();
-  res.json(list)
+  res.json(getList())
 })
 
 
