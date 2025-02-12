@@ -1,31 +1,44 @@
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+import mongoose from "mongoose";
 
 
-const username = "gvelardez"
-const pass = "otpCYMQmnI0BaXNF"
+mongoose.set('strictQuery', false)
 
-const uri = `mongodb+srv://${username}:${pass}@fullstackopen.ygpw3.mongodb.net/?retryWrites=true&w=majority&appName=Fullstackopen`;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+const url = process.env.MONGODB_URI
 
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
-run().catch(console.dir);
+
+console.log('connecting to', url)
+
+mongoose.connect(url)
+
+  .then(result => {
+    console.log('connected to MongoDB')
+  })
+  .catch(error => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
+
+
+
+
+
+const personSchema = new mongoose.Schema({
+        name: {
+            type: String,
+            required: true, 
+            trim: true 
+        },
+        number: {
+            type: String,
+            required: true,
+            match: [/^\+?\d{1,3}?[-.\s]?\(?\d{1,4}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'Formato de número no válido']
+        }
+    })
+
+
+
+const Person =   mongoose.model('Person', personSchema)
+
+
+export default Person;

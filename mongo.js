@@ -1,6 +1,6 @@
 import  mongoose  from 'mongoose'
 
-import { username,pass } from './credentials.js';
+import { username,pass } from './credentials.env';
 
 
 
@@ -32,6 +32,21 @@ if(obj != undefined){
             match: [/^\+?\d{1,3}?[-.\s]?\(?\d{1,4}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'Formato de número no válido']
         }
     })
+
+
+
+
+
+    phoneSchema.set('toJSON', {
+      transform: (document, returnedObject) => {
+        returnedObject.id = returnedObject._id.toString()
+        delete returnedObject._id
+        delete returnedObject.__v
+      }
+    })
+
+
+
   
   const Phone = mongoose.model('Phone', phoneSchema)
 
@@ -118,7 +133,7 @@ if(obj != undefined){
 
 
   function connectDB(password){
-    const uri = `mongodb+srv://gvelardez:${pass}@fullstackopen.ygpw3.mongodb.net/?retryWrites=true&w=majority&appName=Fullstackopen`;
+    const uri = MONGODB_URI;
     mongoose.set('strictQuery',false)
 
     mongoose.connect(uri)
