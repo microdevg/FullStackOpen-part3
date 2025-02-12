@@ -1,53 +1,46 @@
 
-
-
-
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+import {Person,mongoose} from "./db.js";
 
 
 
 
-const createElement = (newElement)=>{
-  return persons.push(newElement);
+
+const createElement = ({name,number})=>{
+
+  const newPerson = new Person({
+    name,
+    number
+  })
+  return newPerson.save()
 }
 
 const getList = ()=>{
-    return persons
+    return Person.find({}).then(result=> result)
 }
 
 const getElement = (id)=>{
 
-  return persons.find(person => person.id === id)
+  return Person.findOne({ _id: new mongoose.Types.ObjectId(id) }).then(result => result)
 }
+
+
+
+const getElementByName = (name)=>{
+
+
+   return  Person.findOne({name:name}).then(result=> result);
+
+  }
 
 
 const deleteElement = (id) => {
 
-  let ret =[]
-  const index = persons.findIndex(person => person.id === id);
-  if (index !== -1) ret =    persons.splice(index, 1);
-  return ret
+  return   Person.deleteOne({ _id: new mongoose.Types.ObjectId(id) }).then(result =>{
+    console.log("result",result, result.deletedCount);
+    return result;
+  } )
+
+  
 };
 
 
@@ -60,6 +53,7 @@ const updateElement = (id,data)=>{
 export  {
     getList,
     getElement,
+    getElementByName,
     deleteElement,
     createElement
 }

@@ -32,7 +32,7 @@ const personSchema = new mongoose.Schema({
         number: {
             type: String,
             required: true,
-            match: [/^\+?\d{1,3}?[-.\s]?\(?\d{1,4}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'Formato de número no válido']
+        //    match: [/^\+?\d{1,3}?[-.\s]?\(?\d{1,4}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'Formato de número no válido']
         }
     })
 
@@ -41,4 +41,7 @@ const personSchema = new mongoose.Schema({
 const Person =   mongoose.model('Person', personSchema)
 
 
-export default Person;
+export {Person, mongoose} ;
+
+
+

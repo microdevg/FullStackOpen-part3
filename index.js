@@ -10,7 +10,8 @@ import morgan from "morgan"
 import {  getList, 
           getElement,
           deleteElement,
-          createElement} from "./Persons.js"
+          createElement,
+          getElementByName} from "./Persons.js"
 
 
 console.log(getList())
@@ -36,16 +37,22 @@ app.get('/', (req, res) => {
   res.send('<h1>Phone book</h1>')
 })
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons',async (req, res) => {
 
-  res.json(getList())
+  
+
+  const list = await  getList();
+    res.json(list)
+
+
 })
 
 
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = parseInt(req.params.id)
-  const person  =getElement(id);
+app.get('/api/persons/:id', async (req, res) => {
+  const id = req.params.id
+  const person  = await getElement(id);
+  console.log("person with id:",id, person)
   if (person) {
       res.json(person)
     } else {
@@ -60,29 +67,41 @@ app.get('/api/persons/:id', (req, res) => {
 
 
 
-const getRandomInt = (max=100000) => {
-  return Math.floor(Math.random() * (max + 1));
-};
+app.get('/api/persons/name/:name', async (req, res) => {
+  const name = req.params.name
+  const person  = await getElementByName(name);
+  console.log("person is",person)
+  if (person ) res.json(person)
+  else{
+      const errorMessage = "Person not founded";
+      res.statusMessage = errorMessage
+      res.status(404)
+      res.json({errorMessage}) 
+    }
+})
 
 
-app.post('/api/persons', (req, res) => {
+
+
+
+
+app.post('/api/persons',  async (req, res) => {
   const {name,number} = req.body;
-
   if (name != undefined && number != undefined) {
-
-      const unique = getList().find(person => person.name == name)
+      let unique = await getList()
+      unique = unique.find(p=>p.name ===name);
+      console.log(`set unique ${unique}`);
       const errorMessage = "Name already  used ";
       if(unique != undefined){
         res.statusMessage = errorMessage
         res.status(404)
         return res.json({errorMessage}) 
-
       }
-    
+      const person = {name,number};
+      const ret = await createElement(person)
 
-      const person = {name,number, id : getRandomInt()};
-      createElement(person);
-      res.json(person);
+      res.json(ret)
+
     } else {
       const errorMessage = "Error in data";
       res.statusMessage = errorMessage
@@ -95,10 +114,11 @@ app.post('/api/persons', (req, res) => {
 
 
 
-app.delete('/api/persons/:id', (req, res)=>{
-  const id = parseInt(req.params.id)
-  const person = deleteElement(id);
-  res.json(person);
+app.delete('/api/persons/:id', async (req, res)=>{
+  const id = req.params.id
+  const person =await  deleteElement(id);
+  console.log("resultado del delete",person);
+  res.json({message:`It was delete ${person.deletedCount} with id ${id}`});
 
 });
 

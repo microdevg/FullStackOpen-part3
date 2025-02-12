@@ -133,7 +133,7 @@ if(obj != undefined){
 
 
   function connectDB(password){
-    const uri = MONGODB_URI;
+    const uri = process.env.MONGODB_URI;
     mongoose.set('strictQuery',false)
 
     mongoose.connect(uri)
