@@ -19,6 +19,10 @@ const getList = ()=>{
 }
 
 const getElement = (id)=>{
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    console.error("ID inválido:", id);
+    return console.log("id invalido")
+}
 
   return Person.findOne({ _id: new mongoose.Types.ObjectId(id) }).then(result => result)
 }
