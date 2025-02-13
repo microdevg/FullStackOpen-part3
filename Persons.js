@@ -16,7 +16,9 @@ const getList = () => {
 
 const getElement = (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("ID invalid format").name = "CastError";
+    const error = new Error("malformatted id");
+    error.name = "CastError";  // Asegurar que el nombre coincide con el esperado en el middleware
+    throw error;
   }
   return Person.findOne({ _id: new mongoose.Types.ObjectId(id) });
 };
@@ -27,14 +29,18 @@ const getElementByName = (name) => {
 
 const deleteElement = (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("ID invalid format");
+    const error = new Error("malformatted id");
+    error.name = "CastError";  // Asegurar que el nombre coincide con el esperado en el middleware
+    throw error;
   }
   return Person.deleteOne({ _id: new mongoose.Types.ObjectId(id) });
 };
 
 const updateElement = (id, data) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("ID invalid format");
+    const error = new Error("malformatted id");
+    error.name = "CastError";  // Asegurar que el nombre coincide con el esperado en el middleware
+    throw error;
   }
   return Person.findByIdAndUpdate(id, data, { new: true });
 };

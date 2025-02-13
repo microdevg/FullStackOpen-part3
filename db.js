@@ -26,13 +26,14 @@ mongoose.connect(url)
 const personSchema = new mongoose.Schema({
         name: {
             type: String,
+            minLength:5,
             required: true, 
             trim: true 
         },
         number: {
             type: String,
             required: true,
-        //    match: [/^\+?\d{1,3}?[-.\s]?\(?\d{1,4}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'Formato de número no válido']
+            match: [/^\+?\d{1,3}?[-.\s]?\(?\d{1,4}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'Formato de número no válido']
         }
     })
 

@@ -28,9 +28,6 @@ morgan.token('body', (req) => JSON.stringify(req.body) || '');
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'));
 
 
-app.get('/', (req, res) => {
-  res.send('<h1>Phone book</h1>')
-})
 
 app.get('/api/persons', async (req, res) => {
   try {
@@ -71,19 +68,18 @@ app.get('/api/persons/name/:name', async (req, res,next) => {
     }
   } catch (error) {
     next(error)
-    console.error("Error in server:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 
 
-app.post('/api/persons', async (req, res) => {
+app.post('/api/persons', async (req, res,next) => {
   try {
     const { name, number } = req.body;
 
     if (!name || !number) {
-      return res.status(400).json({ error: "Error en los datos, name y number son requeridos." });
+      return res.status(400).json({ error: " Name y number are required." });
     }
 
     const existingPerson = await getElementByName(name);
@@ -95,8 +91,8 @@ app.post('/api/persons', async (req, res) => {
     const person = await createElement({ name, number });
     res.status(201).json(person);
   } catch (error) {
-    console.error("Error al crear la persona:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    next(error);
+
   }
 });
 
@@ -105,19 +101,19 @@ app.delete('/api/persons/:id', async (req, res) => {
     const id = req.params.id;
 
     if (!checkId) {
-      return res.status(400).json({ error: "ID inválido." });
+      return res.status(400).json({ error: "ID invalid." });
     }
 
     const person = await deleteElement(id);
 
     if (person.deletedCount === 0) {
-      return res.status(404).json({ error: "Persona no encontrada." });
+      return res.status(404).json({ error: "Person not found." });
     }
 
-    res.json({ message: `Se eliminó correctamente la persona con ID ${id}.` });
+    res.json({ message: `Successfully deleted person with ID ${id}.` });
   } catch (error) {
-    console.error("Error al eliminar la persona:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error deleting person:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -128,8 +124,8 @@ app.get("/info", async (req, res) => {
     const message = `<p>Phonebook tiene información de ${people.length} personas.</p><p>${now}</p>`;
     res.send(message);
   } catch (error) {
-    console.error("Error al obtener la información:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("Error getting information:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
