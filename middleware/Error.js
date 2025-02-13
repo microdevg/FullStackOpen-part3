@@ -13,4 +13,4 @@ const errorHandler = (error, request, response, next) => {
 }
 
 
-  export default errorHandler;
+export default errorHandler
