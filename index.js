@@ -1,7 +1,6 @@
 import express from "express"
 import cors from "cors"
 
-import  unknownEndpoint from "./middleware/unknownEndPoint.js"
 
 
 import morgan from "morgan"
@@ -9,26 +8,22 @@ import morgan from "morgan"
 
 import {  getList, 
           getElement,
+          updateElement,
           deleteElement,
           createElement,
-          getElementByName} from "./Persons.js"
+          getElementByName,
+          checkId} from "./Persons.js"
+import errorHandler from "./middleware/Error.js"
+import unknownEndpoint from "./middleware/unknownEndpoint.js"
 
-
-console.log(getList())
 
 const app = express()
-
 app.use(cors())
-
 app.use(express.json())
-
 app.use(express.static('dist'))
-
-
 
 // Middleware para agregar el body a los tokens de Morgan
 morgan.token('body', (req) => JSON.stringify(req.body) || '');
-
 // Configurar Morgan con el token personalizado
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :body'));
 
@@ -37,110 +32,188 @@ app.get('/', (req, res) => {
   res.send('<h1>Phone book</h1>')
 })
 
-app.get('/api/persons',async (req, res) => {
+app.get('/api/persons', async (req, res) => {
+  try {
+    const list = await getList();
+    res.json(list);
+  } catch (error) {
+    console.error("Error al obtener la lista de personas:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
 
-  
-
-  const list = await  getList();
-    res.json(list)
-
-
-})
-
-
-
-app.get('/api/persons/:id', async (req, res) => {
-  const id = req.params.id
-  const person  = await getElement(id);
-  console.log("person with id:",id, person)
-  if (person) {
-      res.json(person)
+app.get('/api/persons/:id', async (req, res,next) => {
+  try {
+    const id = req.params.id;
+    const person = await getElement(id);
+    console.log("Person with ID:", id, person);
+    
+    if (person) {
+      res.json(person);
     } else {
-      const errorMessage = "Person not founded";
-      res.statusMessage = errorMessage
-      
-      res.status(404)
-      res.json({errorMessage}) 
+      res.status(404).json({ error: "Person not found" });
     }
-})
+  } catch (error) {
+    next(error)
+   
+  }
+});
 
-
-
-
-app.get('/api/persons/name/:name', async (req, res) => {
-  const name = req.params.name
-  const person  = await getElementByName(name);
-  console.log("person is",person)
-  if (person ) res.json(person)
-  else{
-      const errorMessage = "Person not founded";
-      res.statusMessage = errorMessage
-      res.status(404)
-      res.json({errorMessage}) 
-    }
-})
-
-
-
-
-
-
-app.post('/api/persons',  async (req, res) => {
-  const {name,number} = req.body;
-  if (name != undefined && number != undefined) {
-      let unique = await getList()
-      unique = unique.find(p=>p.name ===name);
-      console.log(`set unique ${unique}`);
-      const errorMessage = "Name already  used ";
-      if(unique != undefined){
-        res.statusMessage = errorMessage
-        res.status(404)
-        return res.json({errorMessage}) 
-      }
-      const person = {name,number};
-      const ret = await createElement(person)
-
-      res.json(ret)
-
+app.get('/api/persons/name/:name', async (req, res,next) => {
+  try {
+    const name = req.params.name;
+    const person = await getElementByName(name);
+    console.log("Person found:", person);
+    if (person) {
+      res.json(person);
     } else {
-      const errorMessage = "Error in data";
-      res.statusMessage = errorMessage
-      
-      res.status(404)
-      res.json({errorMessage}) 
+      res.status(404).json({ error: "Person not found" });
     }
-})
-
-
-
-
-app.delete('/api/persons/:id', async (req, res)=>{
-  const id = req.params.id
-  const person =await  deleteElement(id);
-  console.log("resultado del delete",person);
-  res.json({message:`It was delete ${person.deletedCount} with id ${id}`});
-
+  } catch (error) {
+    next(error)
+    console.error("Error in server:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 
 
-const generateId = () => {
-  const maxId = getList().length > 0
-    ? Math.max(...getList().map(n => n.id))
-    : 0
-  return maxId + 1
-}
+app.post('/api/persons', async (req, res) => {
+  try {
+    const { name, number } = req.body;
 
-app.get("/info",(req,res)=>{
-  const num = getList().length;
-  const now = new Date();
-  const message = `<p>Phonebook has info for ${num} people.</p> <p>${now}<p/>`
-  res.send(message);
-})
+    if (!name || !number) {
+      return res.status(400).json({ error: "Error en los datos, name y number son requeridos." });
+    }
+
+    const existingPerson = await getElementByName(name);
+    if (existingPerson) {
+      const updatedPerson = await updateElement(existingPerson._id, { name, number });
+      return res.status(409).json(updatedPerson);
+    }
+
+    const person = await createElement({ name, number });
+    res.status(201).json(person);
+  } catch (error) {
+    console.error("Error al crear la persona:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+app.delete('/api/persons/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (!checkId) {
+      return res.status(400).json({ error: "ID inválido." });
+    }
+
+    const person = await deleteElement(id);
+
+    if (person.deletedCount === 0) {
+      return res.status(404).json({ error: "Persona no encontrada." });
+    }
+
+    res.json({ message: `Se eliminó correctamente la persona con ID ${id}.` });
+  } catch (error) {
+    console.error("Error al eliminar la persona:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+app.get("/info", async (req, res) => {
+  try {
+    const people = await getList();
+    const now = new Date();
+    const message = `<p>Phonebook tiene información de ${people.length} personas.</p><p>${now}</p>`;
+    res.send(message);
+  } catch (error) {
+    console.error("Error al obtener la información:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+
+
+
+
+
+
+app.put('/api/persons', async (req, res,next) => {
+  try {
+    const { name, number, id } = req.body;
+
+    // Validar datos de entrada
+    if (!name || !number) {
+      return res.status(400).json({ error: "Error en los datos, name y number son requeridos." });
+    }
+
+    // Verificar si el ID es válido
+    if (!checkId(id)) {
+      return res.status(400).json({ error: "Formato de ID inválido." });
+    }
+
+    // Verificar si el nombre ya está en uso por otra persona
+    const existingPerson = await getElementByName(name);
+    if (existingPerson && existingPerson._id.toString() !== id) {
+      return res.status(409).json({ error: "Update data" });
+    }
+
+    // Actualizar la persona
+    const updatedPerson = await updateElement(id, { name, number });
+
+    if (!updatedPerson) {
+      return res.status(404).json({ error: "Persona no encontrada." });
+    }
+
+    res.json(updatedPerson);
+  } catch (error) {
+    next(error)
+  }
+});
+
+
+
+app.put('/api/persons/:id', async (req, res,next) => {
+  try {
+    const { id } = req.params;
+    const { name, number } = req.body;
+
+    // Validar datos de entrada
+    if (!name || !number) {
+      return res.status(400).json({ error: "Error en los datos, name y number son requeridos." });
+    }
+
+    // Verificar si el ID es válido
+    if (!checkId(id)) {
+      return res.status(400).json({ error: "Formato de ID inválido." });
+    }
+
+    // Verificar si el nombre ya está en uso por otra persona
+    const existingPerson = await getElementByName(name);
+    if (existingPerson && existingPerson._id.toString() !== id) {
+      return res.status(409).json({ error: "El nombre ya está en uso." });
+    }
+
+    // Actualizar la persona
+    const updatedPerson = await updateElement(id, { name, number });
+
+    if (!updatedPerson) {
+      return res.status(404).json({ error: "Persona no encontrada." });
+    }
+
+    res.json(updatedPerson);
+  } catch (error) {
+    next(error)
+  }
+});
 
 
 
 app.use(unknownEndpoint)
+
+
+app.use(errorHandler)
 
 
 
